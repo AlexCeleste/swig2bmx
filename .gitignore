@@ -1,0 +1,7 @@
+*.exe
+*.o
+*.a
+*.dll
+*.bmx
+tmp/*
+
