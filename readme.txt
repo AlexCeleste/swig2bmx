@@ -130,6 +130,18 @@ You can make cffi-to-bmx aware of extra data types by giving them their own
 typemaps in the .i file. This is handled as normal for SWIG.
 
 
+Example:
+--------
+
+Included files (you can tell them by their "irr..." names) are present for a
+working Irrlicht wrapper. The final hand-corrections have already been applied,
+to save effort - only compiling the .cpp to .o files remains to be done.
+
+libIrrlicht.a is included for Mac OS X, because the default build doesn't work
+properly with Max and needs tweaks (they'll be published separately in due
+course to make this properly open-source).
+
+
 Happy wrapping!
 
 
