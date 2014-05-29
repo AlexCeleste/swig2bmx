@@ -60,6 +60,8 @@ It should be possible to instantiate all templates in advance (e.g. with a
 typedef declaration) that the user expects to use. Complicated TMP or inline
 template expressions are not suitable for SWIG.
 
+Parameters of an unrecognised template type are currently exported as Byte Ptr.
+
 
 Multiple inheritance: BlitzMax does not support multiple inheritance and SWIG
 will only export one superclass per class. You may want to change the one it
@@ -69,6 +71,28 @@ ICameraSceneNode.
 Inheritance isn't a showstopper, as casting to another proxy type is very easy.
 As long as it's a legitimate end type (it will *always* succeed, so be careful),
 the methods on the proxy object will still work.
+
+
+Operators: basic operator overloading is supported, translating operators into
+methods named "Add", "Mul", etc. This will do for simple things (e.g. adding
+vectors or matrices), but complicated operators - such as && - are not exported.
+A library that relies on bizarre and complex overloads to create a domain
+specific sublanguage (e.g. Boost::Phoenix, Spirit) is totally unsuitable for
+wrapping.
+
+
+Overloading: Since BlitzMax does not support overloading, overloaded methods are
+renamed. The wrapper makes two attempts to rename methods, by adding parameter
+names, and then if that fails by adding their types instead; if both result in
+a method that would clash with an existing export, the method is omitted.
+
+In practice over 99% of methods can be exported in this way, although some of
+their names may be a bit unpredictable.
+
+
+Global variables: are exported as read-only via wrapper function. In practice
+you don't generally need to set globals in a library directly, so this is not
+a big deal.
 
 
 Customization:
