@@ -2,6 +2,5 @@
 *.o
 *.a
 *.dll
-*.bmx
 tmp/*
 
