@@ -1,0 +1,76 @@
+
+# Script to automate wrapping Irrlicht for BlitzMax
+
+# copy header tree
+# sed out system headers (necessary?)
+# comment out erroneous declarations
+#   references to private classes (CIndexBuffer.h, CVertexBuffer.h)
+#   PACK_STRUCT / irrpack.h
+#   IGPUProgrammingServices.h:
+      overloads at line 258 & 278 needs to be rendered less ambiguous by removing first two defaults from each
+      first one from 238
+      first two from 106, 131, 151
+#   sed these out
+# redeclare some structs as classes so they appear in the CLOS interface
+#   IVertexManipulator (needed for inheritance hierarchy)
+#   others don't seem so important right now
+# change parameter and return types not to use templates
+#   createDevice
+
+# automatically scan for template typedefs to build %template list
+#   then sed them into shape as an include for the .i file
+pcregrep -h '^[ \t]*typedef\s.*?<.*?;' irrSWIG/* > template-typedefs1.i
+cp template-typedefs1.i template-typedefs2.i
+sed -i ".irrlicht.bak" -e 's/^.*typedef[[:blank:]]*\([^;]*\)>[[:blank:]]*\([^;]*\);/TYPEDEF(\2, \1>)/g' template-typedefs1.i
+sed -i ".irrlicht.bak" -e 's/^.*typedef[[:blank:]]*\([^;]*\)>[[:blank:]]*\([^;]*\);/%template(\2) \1>;/g' template-typedefs2.i
+#   comment XML*, Node, position2d, tQ3EntityList, stringc, stringw
+
+# run swig
+  swig -c++ -includeall -fvirtual -cffi -noswig-lisp irrlicht.i
+  # use -ignoremissing too?
+
+# build wrapper library
+  g++ -Os -m32 -c -w irrlicht_wrap.cxx
+
+# sed out #. syntax from lisp file
+  for f in *.lisp ; do sed -i ".irrlicht.bak" -e 's/#\.//g' "$f" ; done
+# sed [] syntax to aRef in CLOS file
+
+# run cffi2bmx
+echo "(irrlicht libIrrlicht.a)" | gsi -e '(load "~~/lib/syntax-case")' cffi-to-bmx.scm
+# display overload list
+
+# correct include path and namespaces for irrlicht.gen-enums.cpp
+g++ irrlicht.gen-enums.cpp -o irrlicht.gen-enums && ./irrlicht.gen-enums > irrlicht.extra-enums.bmx
+
+# (correct <<UNKNOWN>> types) not required for this project
+# fill in cvar wrapper functions with irrlicht.cvar-wrapper.cpp
+g++ -m32 -c -w irrlicht.cvar-wrapper2.cpp -o irrlicht.cvar-wrapper.o
+
+# manually choose overload names
+
+# build irrlicht
+#   build lib target in Xcode "for running"
+#   sed out duplicate symbols in libpng/pngerror.c
+#   comment out [NSApp finishLaunching]; to allow GUI build
+
+# make final manual corrections to BMX code in response to errors
+#   comment out duplicate identifiers, Pi, etc.
+'Const EGUIET_FORCE_32_BIT
+'Const EGST_COUNT
+'Function PI
+#   fix these with a per-project sed script
+#  Correct inheritance for multi-path classes where appropriate
+
+  for f in *.irrlicht.bak ; do rm "$f" ; done
+
+# ready to use!
+
+
+# Questions/issues:
+#  - should enums be packaged in types rather than left at toplevel?
+#  - how best to namespace functions and globals?
+#  - should :pointer convert to Int instead of Byte Ptr?
+#  - is it safe to eradicate duplicated overloads (esp. by name?)
+#  - how best to rename overloads? by type or by arg name? (default to name, retry with type)
+
