@@ -51,6 +51,27 @@ allow writing code similar to C++ where stack-allocated or RAII objects are
 placed inline in expressions without needing to be freed explicitly.
 
 
+Proxy objects:
+--------------
+
+When a proxy object is collected by the BlitzMax GC, it runs its finalizer on
+the wrapped pointer. By default this either does nothing, or frees the C++
+object if it was created by a direct constructor ("Make") call from BlitzMax.
+
+Proxy objects can also be linked into the C++ library's memory management using
+<lib>-method-advice.scm, such as Irrlicht's IReferenceCounted interface (objects
+returned from "create*" methods are released with "drop()" when the proxy is
+collected.
+
+However, this system isn't perfect. As outlined below, it may become necessary
+to "cast" an object to a different proxy type (most likely because of multiple
+inheritance). In this case the newly returned proxy will DO NOTHING when it is
+collected. If you want the cast to be "permanent" (i.e. you want to use it as
+the new type and discard the old proxy), you must transfer ownership to the new
+proxy with "_Claim" (e.g. "newProx._Claim(original)"). This will shift over the
+finalizer to the new object and ensure no "double-free" situations occur.
+
+
 Limitations:
 ------------
 
@@ -70,7 +91,10 @@ ICameraSceneNode.
 
 Inheritance isn't a showstopper, as casting to another proxy type is very easy.
 As long as it's a legitimate end type (it will *always* succeed, so be careful),
-the methods on the proxy object will still work.
+the methods on the proxy object will still work. (e.g. "ISceneNode._Cast(cam)"
+will turn a camera from an IEventReceiver into a scene node). Note that as above
+casts create temporary objects that need to manually claim ownership if they are
+to be retained for longer than the original.
 
 
 Operators: basic operator overloading is supported, translating operators into
