@@ -1,4 +1,7 @@
 *.exe
+*.app
+*.a
+*.o
 *.dll
 tmp/*
 .bmx/*
