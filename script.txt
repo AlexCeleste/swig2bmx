@@ -2,48 +2,41 @@
 # Script to automate wrapping Irrlicht for BlitzMax
 
 # copy header tree
-# sed out system headers (necessary?)
 # comment out erroneous declarations
 #   references to private classes (CIndexBuffer.h, CVertexBuffer.h)
 #   PACK_STRUCT / irrpack.h
-#   IGPUProgrammingServices.h:
-      overloads at line 258 & 278 needs to be rendered less ambiguous by removing first two defaults from each
-      first one from 238
-      first two from 106, 131, 151
-#   sed these out
+#   IGPUProgrammingServices.h - remove defaults causing ambiguous calls
 # redeclare some structs as classes so they appear in the CLOS interface
 #   IVertexManipulator (needed for inheritance hierarchy)
-#   others don't seem so important right now
-# change parameter and return types not to use templates
-#   createDevice
 
 # automatically scan for template typedefs to build %template list
-#   then sed them into shape as an include for the .i file
-pcregrep -h '^[ \t]*typedef\s.*?<.*?;' irrSWIG/* > template-typedefs1.i
-cp template-typedefs1.i template-typedefs2.i
-sed -i ".irrlicht.bak" -e 's/^.*typedef[[:blank:]]*\([^;]*\)>[[:blank:]]*\([^;]*\);/TYPEDEF(\2, \1>)/g' template-typedefs1.i
-sed -i ".irrlicht.bak" -e 's/^.*typedef[[:blank:]]*\([^;]*\)>[[:blank:]]*\([^;]*\);/%template(\2) \1>;/g' template-typedefs2.i
-#   comment XML*, Node, position2d, tQ3EntityList, stringc, stringw
+	pcregrep -h '^[ \t]*typedef\s.*?<.*?;' include.SWIG/* > template-typedefs1.i
+# comment XML*, Node, position2d, tQ3EntityList, stringc, stringw
+	for t in tQ3EntityList IXMLReader IXMLReaderUTF8 Node stringc stringw char16 char32 IrrXMLReader IrrXMLReader16 IrrXMLReader32 position2df position2di ; do
+		sed -i ".irrlicht.bak" -e "s/^.*\(typedef[[:blank:]]*[^;]*>[[:blank:]]*$t;\)/\/\/\1/g" template-typedefs1.i
+	done
+	cp template-typedefs1.i template-typedefs2.i
+	sed -i ".irrlicht.bak" -e 's/^[[:blank:]]*typedef[[:blank:]]*\([^;]*\)>[[:blank:]]*\([^;]*\);/TYPEDEF(\2, \1>)/g' template-typedefs1.i
+	sed -i ".irrlicht.bak" -e 's/^[[:blank:]]*typedef[[:blank:]]*\([^;]*\)>[[:blank:]]*\([^;]*\);/%template(\2) \1>;/g' template-typedefs2.i
 
 # run swig
-  swig -c++ -includeall -fvirtual -cffi -noswig-lisp irrlicht.i
-  # use -ignoremissing too?
+	swig -c++ -includeall -ignoremissing -fvirtual -cffi -noswig-lisp irrlicht.i
+# delete include.SWIG
+	rm -rf include.SWIG/
 
 # build wrapper library
-  g++ -Os -m32 -c -w irrlicht_wrap.cxx
+	g++ -Os -m32 -c -w irrlicht_wrap.cxx
 
-# sed out #. syntax from lisp file
-  for f in *.lisp ; do sed -i ".irrlicht.bak" -e 's/#\.//g' "$f" ; done
-# sed [] syntax to aRef in CLOS file
+# correct .lisp syntax (remove #. , [] -> aRef)
+	sed -i ".irrlicht.bak" -e 's/#\.//g' irrlicht.lisp
+	sed -i ".irrlicht.bak" -e 's/\[\]/aRef/g' irrlicht-clos.lisp
 
 # run cffi2bmx
-echo "(irrlicht libIrrlicht.a)" | gsi -e '(load "~~/lib/syntax-case")' cffi-to-bmx.scm
-# display overload list
+	echo "(irrlicht libIrrlicht.a)" | gsi -e '(load "~~/lib/syntax-case")' cffi-to-bmx.scm
 
 # correct include path and namespaces for irrlicht.gen-enums.cpp
 g++ irrlicht.gen-enums.cpp -o irrlicht.gen-enums && ./irrlicht.gen-enums > irrlicht.extra-enums.bmx
 
-# (correct <<UNKNOWN>> types) not required for this project
 # fill in cvar wrapper functions with irrlicht.cvar-wrapper.cpp
 g++ -m32 -c -w irrlicht.cvar-wrapper2.cpp -o irrlicht.cvar-wrapper.o
 
