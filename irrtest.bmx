@@ -15,7 +15,7 @@ Local guienv:IGUIEnvironment = device.getGUIEnvironment()
 
 device.getFileSystem().changeWorkingDirectoryTo(PathFromString(cdir))
 
-guienv.addStaticText("Hello World! This is the Irrlicht Software renderer!", RectI.MakeWithXYX2Y2(10, 10, 260, 22))
+guienv.addStaticText("Hello World! This is the Irrlicht OpenGL renderer!", RectI.MakeWithXYX2Y2(10, 10, 260, 22))
 
 Local mesh:IAnimatedMesh = smgr.GetMesh(PathFromString("media/sydney.md2"))
 Local node:IAnimatedMeshSceneNode = smgr.addAnimatedMeshSceneNode(mesh)

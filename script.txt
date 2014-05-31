@@ -61,6 +61,7 @@ g++ -m32 -c -w irrlicht.cvar-wrapper2.cpp -o irrlicht.cvar-wrapper.o
 'Function PI
 #   fix these with a per-project sed script
 #  Correct inheritance for multi-path classes where appropriate
+#   ICameraSceneNode should extend ISceneNode by default
 
   for f in *.irrlicht.bak ; do rm "$f" ; done
 
