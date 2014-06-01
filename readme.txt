@@ -11,6 +11,9 @@ The resulting wrapper will not be quite as fast or as elegant as a hand-crafted
 solution, but it's much easier than wrapping tens or hundreds of thousands of
 lines of code manually, right?
 
+Take a look at the Irrlicht example to get started (instructions are in its
+own readme).
+
 
 Status:
 -------
