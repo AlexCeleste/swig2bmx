@@ -25,7 +25,7 @@ using swig2bmx!
 	- standard-typemaps.i
 	Place them in this folder.
 
-4) Run script.sh from the terminal.
+4) Run script.sh from the terminal. (This could take a few minutes.)
 
 5) Use your platform's build tools to build libIrrlicht.a using the version in
 	this folder (it has been patched to be Max-compatible by script.sh). Make
