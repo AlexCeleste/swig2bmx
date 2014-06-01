@@ -339,6 +339,26 @@
 (defm cl:shadow		;Overloaded operator declarations, in this case
 	IGNORE)
 
+; Load custom method advice
+(define (before-method-advice c n a)
+	#f)
+(define (var-call-advice arg n)
+	(string-append (car arg) (number->string n)) )
+(define (after-method-advice m)
+	#f)
+(define (return-special-advice c n r)
+	#f)
+(define (return-object-advice c n r)
+	r)
+(define (interface-typemap t)
+	#f)
+(define (additional-imports)
+	"")
+(let ((advice-file (string-append file "-method-advice.scm")))
+	(if (file-exists? advice-file)
+		(load advice-file)
+		#f) )
+
 ; Load the CLOS definitions file and build the high-level OO interface
 (openwrite (string-append file "-interface.bmx"))
 (pr "\n' " file " wrapper\n\n"
@@ -351,7 +371,7 @@
 	(when (file-exists? helper-bin)
 		(pr "Import \"" helper-bin "\"\n") ))
 (for-each (lambda (lib) (pr "Import \"" lib "\"\n")) (cdr command-args))
-(pr "\nSuperStrict\n\n")
+(pr (additional-imports) "\nSuperStrict\n\n")
 	
 (pr "Include \"" file "-base.bmx\"\n")
 (let ((helper-file (string-append file "-helper.bmx")))
@@ -390,24 +410,6 @@
 
 (load (string-append file "-clos.lisp"))
 (set! classes (reverse classes))
-
-(define (before-method-advice c n a)
-	#f)
-(define (var-call-advice arg n)
-	(string-append (car arg) (number->string n)) )
-(define (after-method-advice m)
-	#f)
-(define (return-special-advice c n r)
-	#f)
-(define (return-object-advice c n r)
-	r)
-(define (interface-typemap t)
-	#f)
-;Load custom method advice
-(let ((advice-file (string-append file "-method-advice.scm")))
-	(if (file-exists? advice-file)
-		(load advice-file)
-		#f) )
 
 ; Get a high-level BlitzMax type from a CFFI type tag: '(tagstr orig description . extra)
 (define-structure max-type tag orig desc extra)
