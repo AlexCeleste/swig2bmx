@@ -3,8 +3,7 @@ Import "irrlicht-interface.bmx"
 
 SuperStrict
 
-Local x:Int = 640, y:Int = 480
-Local device:IrrlichtDevice = irrlicht.createDevice(EDT_OPENGL, Dimension2du.MakeWithWidthHeight(Varptr(x), Varptr(y)), 32, 0, 0, 0, Null)
+Local device:IrrlichtDevice = irrlicht.createDevice(EDT_OPENGL, Dimension2du.MakeWithWidthHeight(640, 480), 32, 0, 0, 0, Null)
 
 device.setWindowCaption("Hello World! - Irrlicht Engine Demo")
 

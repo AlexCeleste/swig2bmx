@@ -40,7 +40,7 @@
 
 (set! return-special-advice
 	(lambda (class name rt)
-		(string-append "String.FromCString(_ret)") ))
+		(string-append "String.FromCString(ret)") ))
 
 (set! return-object-advice
 	(lambda (class name rv)

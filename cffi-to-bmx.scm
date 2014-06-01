@@ -23,6 +23,30 @@
   (syntax-rules ()
     ((_ condition do0! do1! ...) (if (not condition) (begin do0! do1! ...)))))
 
+(define (merge-sort pred ls)
+	(define (split ls)
+		(letrec ((split-h (lambda (ls ls1 ls2)
+						(cond
+							((or (null? ls) (null? (cdr ls)))
+								(cons (reverse ls2) ls1) )
+							(else (split-h (cddr ls)
+									(cdr ls1) (cons (car ls1) ls2) ))))))
+    (split-h ls ls '())))
+	(define (merge pred ls1 ls2)
+		(cond
+			((null? ls1) ls2)
+			((null? ls2) ls1)
+			((pred (car ls1) (car ls2))
+				(cons (car ls1) (merge pred (cdr ls1) ls2)) )
+			(else (cons (car ls2) (merge pred ls1 (cdr ls2)))) ))
+	(cond
+		((null? ls) ls)
+		((null? (cdr ls)) ls)
+		(else (let ((splits (split ls)))
+				(merge pred
+					(merge-sort pred (car splits))
+					(merge-sort pred (cdr splits)) )))))
+
 ; CL stuff we don't need
 (defm cl:defmacro IGNORE)
 (defm cl:eval-when IGNORE)
@@ -93,8 +117,7 @@
 		(set! unk-enums (append unk-enums (list n)))
 		"<<UNKNOWN>>")
 	(pr "'enum " name "\n")
-	(if (null? vals)
-		#f
+	(unless (null? vals)
 		(let loop ((rest (cdr vals))
 				   (enum (car vals))
 				   (val 0)
@@ -122,13 +145,13 @@
 	(set! funcs (cons (list cname name argtypes rtype) funcs)) )
 (define (examine-overload n)
 	(let* ((nl (string-length n))
-		   (c (do ((c (- nl 1) (- c 1))
-				   (l 0 (+ l 1)))
+		   (c (do ((c (fx- nl 1) (fx- c 1))
+				   (l 0 (fx+ l 1)))
 				  ((or (< c 0) (not (char-numeric? (string-ref n c)))) l)
 				  #f) )
-		   (st (- nl c)) )
-		(if (and (> c 0)
-				 (string=? (substring n (- st 6) st) "_SWIG_") )
+		   (st (fx- nl c)) )
+		(if (and (fx> c 0)
+				 (string=? (substring n (fx- st 6) st) "_SWIG_") )
 			(substring n st nl)
 			#f) ))
 (define (emit-funcs)
@@ -258,7 +281,7 @@
 							  (loop (cdr atl) (cdr ptl)) )
 						  (else #f) )))
 			(func-aopt-set! (car defaults) (fx+ (func-aopt (car defaults)) 1))
-			(unless (and (string-ci=? name (func-name prev)) (equal? args (func-args prev)))
+			(unless (and (string-ci=? name (func-name prev)) (equal? args (func-args prev)) (equal? rtype (func-rtype prev)))
 				(set! defaults (cons (make-func cname name args 0 rtype) defaults)) ))))	;Don't emit if the difference is constness
 (for-each (lambda (f) (apply coalesce f)) (cdr funcs))
 (set! funcs #f)
@@ -279,10 +302,10 @@
 	(define (maxify name)
 		(set! name	;substring from after the last :
 			(do ((c (string-length name) (fx- c 1)))
-				((or (= c 0) (char=? (string-ref name (fx- c 1)) #\:))
+				((or (fx= c 0) (char=? (string-ref name (fx- c 1)) #\:))
 					(substring name c (string-length name)) )))
 		(set! name  ;Capitalise after and remove each -
-			(do ((c 0 (+ c 1))
+			(do ((c 0 (fx+ c 1))
 				 (r 0 (if (char=? (string-ref name r) #\-) r (fx+ r 1)))
 				 (u #t (if (char=? (string-ref name r) #\-) #t #f)) )
 				((fx= c (string-length name)) (substring name 0 r))
@@ -320,7 +343,7 @@
 ; Declaration of a method
 (define (enqueue-method name lname . a)
 	(table-set! (class-methods (car classes))
-				(cond ((and (eq? name '-) (= (length (car a)) 1)) 'Neg)
+				(cond ((and (eq? name '-) (fx= (length (car a)) 1)) 'Neg)
 					  ((pair? name) (string-append (car name) (maxify-name (cdr name))))
 					  (else name) )
 				lname) )
@@ -427,9 +450,19 @@
 				  	(make-max-type ":Byte Ptr" tag 'prim #f) ))))
 	(define (basic-type tag)
 		(make-max-type (get-type-tag tag ":<<UNKNOWN>>") tag 'prim #f) )
+	(define (make-reftype t tag)
+		(make-max-type t tag 'prim 'reference) )
 	(let* ((t0 (interface-typemap tag))
-		   (t1 (if t0 t0 (if (pair? tag) (object-type tag) #f))) )
-		(if t1 t1 (basic-type tag)) ))
+		   (t1 (if t0 t0 (if (pair? tag) (object-type tag) #f)))
+		   (t2 (if t1 t1 (case tag
+		   			       ((:char-ref :uchar-ref) (make-reftype ":Byte" tag))
+		   			       ((:short-ref :ushort-ref) (make-reftype ":Short" tag))
+		   			       ((:int-ref :enum-ref :uint-ref) (make-reftype ":Int" tag))
+		   			       ((:long-long-ref :ullong-ref) (make-reftype ":Long" tag))
+		   			       ((:float-ref) (make-reftype ":Float" tag))
+		   			       ((:double-ref) (make-reftype ":Double" tag))
+		   			       (else #f) ))))
+		(if t2 t2 (basic-type tag)) ))
 
 (define (strip-c++isms s)
 	(let* ((ts (string-index s #\<))
@@ -455,6 +488,8 @@
 	(eq? (max-type-desc (cdr a)) 'object) )
 (define (is-primitive? a)
 	(eq? (max-type-desc (cdr a)) 'prim) )
+(define (is-constref? a)
+	(and (is-primitive? a) (eq? (max-type-extra (cdr a)) 'reference)) )
 
 (define (emit-proc-body class-name mname mdef is-overload is-method is-ctor)
 	(define (emit-parameters pl dct)
@@ -466,19 +501,21 @@
 					(unless (null? (cdr pl))
 						(pr ", ")
 						(loop (cdr pl) (fx- dct 1)) )))))
-	(define (extend-name mname args aopt . retry)
-		(unless (null? args)
-			(set! mname (string-append mname "With"))
-			(for-each
-				(lambda (p)
-					(set! mname (string-append mname (capitalize (tag-to-name
-							(if (null? retry)
-								(car p)		;Varnames by default
-								(let* ((t (max-type-tag (cdr p))) (sp (string-index t #\space)))
-									(if sp
-										(begin (set! t (string-append t)) (string-set! t sp #\_) t)
-										t) )))))))
-				(if (fx> aopt 0) (reverse (list-tail (reverse args) aopt)) args) ))
+	(define (extend-name mname args aopt retry)
+		(if (null? args)
+			#f;(if is-ctor (set! mname "MakeNew") (set! mname (string-append mname "0")))
+			(begin
+				(set! mname (string-append mname "With"))
+				(for-each
+					(lambda (p)
+						(set! mname (string-append mname (capitalize (tag-to-name
+								(if retry
+									(let* ((t (max-type-tag (cdr p))) (sp (string-index t #\space)))
+										(if sp
+											(begin (set! t (string-append t)) (string-set! t sp #\_) t)
+											t) )
+									(car p) ))))))	;Varnames by default
+					(if (fx> aopt 0) (reverse (list-tail (reverse args) aopt)) args) )))
 		mname)
 	(define (capitalize s)
 		(string-set! s 0 (char-upcase (string-ref s 0)))
@@ -491,6 +528,7 @@
 	(define (var-call arg n)
 		(cond ((is-object? arg) (string-append "p" (number->string n)))
 			  ((is-special? arg) (var-call-advice arg n))
+			  ((is-constref? arg) (string-append "Varptr(" (car arg) ")"))
 			  (else (car arg)) ))
 	(define (cat-args args ct st)
 		(do ((ct ct (fx- ct 1))
@@ -513,9 +551,9 @@
 		   		   (func-args mdef) ))
 		   (args (if (and (not (null? args0)) (string=? (caar args0) "_self"))
 		   		   (cdr args0) args0) )
-		   (max-name (if is-overload (extend-name mname args (func-aopt mdef)) mname)) )
+		   (max-name (if is-overload (extend-name mname args (func-aopt mdef) #f) mname)) )
 		(when (table-ref clash-list max-name)
-			(set! max-name (extend-name mname args (func-aopt mdef) 'retry)) )
+			(set! max-name (extend-name mname args (func-aopt mdef) #t)) )
 		(if (table-ref clash-list max-name)
 			(set! omitted-warning (cons (cons class-name max-name) omitted-warning))
 			(begin
@@ -534,7 +572,7 @@
 							(pr "\t\tLocal p" c ":Byte Ptr = " basetype "._getPtr(" (car a) ")\n") )))
 				
 				(unless is-void	;Declare return slot
-					(pr "		Local _ret" (if (eq? (max-type-desc rtype) 'prim) (max-type-tag rtype) ":Byte Ptr")
+					(pr "		Local ret" (get-type-tag (max-type-orig rtype))
 						(if (fx= 0 (func-aopt mdef)) " = " "\n") ))
 				
 				(let* ((has-self (and is-method (not is-ctor)))
@@ -550,21 +588,22 @@
 								 (narg (list-tail args (fx- la aopt)) (cdr narg)) )
 								((fx= aopt 0) #t)
 								(pr "If " (caar narg) " = " (default-param-value (max-type-tag (cdar narg))) "\n\t\t\t"
-									(if is-void "." "_ret = .") (func-maxname mdef aopt) "(" (cat-args args (fx- la aopt) stct)
+									(if is-void "." "ret = .") (func-maxname mdef aopt) "(" (cat-args args (fx- la aopt) stct)
 									")\n\t\tElse") )
-							(pr "\n\t\t\t" (if is-void "." "_ret = .") (func-maxname mdef 0) "(" (cat-args args la stct) ")\n\t\tEndIf\n") )))
+							(pr "\n\t\t\t" (if is-void "." "ret = .") (func-maxname mdef 0) "(" (cat-args args la stct) ")\n\t\tEndIf\n") )))
 						
 				(after-method-advice class-name max-name args)
 				(unless is-void	;Actually return
 					(pr "		Local rval" (max-type-tag rtype) " = "
 						(case (max-type-desc rtype) 
 							((special) (return-special-advice class-name max-name rtype))
-							((prim) "_ret")
+							((prim)
+								(if (eq? (max-type-extra rtype) 'reference) "ret[0]" "ret") )
 							((object)
 								(return-object-advice class-name max-name
 									(let ((tn (tag-to-name (max-type-tag rtype))))
 										(string-append tn
-											"(New _" tn "._withPtr(_ret)"
+											"(New _" tn "._withPtr(ret)"
 											(if (or is-ctor (is-value rtype))
 												(string-append "._withDel(delete_" tn "))")
 												")") ))))))
@@ -574,17 +613,18 @@
 				(pr (if (and is-method (not is-ctor)) "	End Method\n" "	End Function\n")) ))))
 
 (define (sort-overloads fs is-method)
-	(define (is-nullary f)
+	(define (is-constref? t)
+		(and (eq? (max-type-desc t) 'prim) (eq? (max-type-extra t) 'reference)) )
+	(define (is-nullary? f)
 		(let* ((args (func-args f)) (al (if is-method (cdr args) args)))
 			(null? al) ))
-	(if (is-nullary (car fs))
-		fs
-		(let loop ((0ary #f) (fs (reverse fs)) (ret '()))
-			(if (null? fs)
-				(if 0ary (cons 0ary ret) ret)
-				(if (is-nullary (car fs))
-					(loop (car fs) (cdr fs) ret)
-					(loop 0ary (cdr fs) (cons (car fs) ret)) )))))
+	(define (cmp l r)
+		(cond ((is-nullary? l) #t)
+			  ((is-nullary? r) #f)
+			  ((is-constref? (max-type-definition (func-rtype l))) #t)
+			  ((is-constref? (max-type-definition (func-rtype r))) #f)
+			  (else #t) ))
+	(merge-sort cmp fs) )
 
 (for-each	;Emit implementations
 	(lambda (c)
