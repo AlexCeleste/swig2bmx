@@ -1,0 +1,128 @@
+diff -u include/CIndexBuffer.h irrSWIG.bak/CIndexBuffer.h
+--- include/CIndexBuffer.h	2014-05-31 23:01:51.000000000 +0100
++++ irrSWIG.bak/CIndexBuffer.h	2014-05-14 22:32:09.000000000 +0100
+@@ -88,7 +88,7 @@
+ 		};
+ 
+ 	public:
+-		IIndexList *Indices;
++		//IIndexList *Indices;
+ 
+ 		CIndexBuffer(video::E_INDEX_TYPE IndexType) :Indices(0), MappingHint(EHM_NEVER), ChangedID(1)
+ 		{
+diff -u include/CVertexBuffer.h irrSWIG.bak/CVertexBuffer.h
+--- include/CVertexBuffer.h	2014-05-31 23:01:51.000000000 +0100
++++ irrSWIG.bak/CVertexBuffer.h	2014-05-14 22:31:47.000000000 +0100
+@@ -70,7 +70,7 @@
+ 		};
+ 
+ 	public:
+-		IVertexList *Vertices;
++		//IVertexList *Vertices;
+ 
+ 		CVertexBuffer(video::E_VERTEX_TYPE vertexType) : Vertices(0),
+ 				MappingHint(EHM_NEVER), ChangedID(1)
+diff -u include/IGPUProgrammingServices.h irrSWIG.bak/IGPUProgrammingServices.h
+--- include/IGPUProgrammingServices.h	2014-05-31 23:01:51.000000000 +0100
++++ irrSWIG.bak/IGPUProgrammingServices.h	2014-05-14 22:40:10.000000000 +0100
+@@ -105,8 +105,8 @@
+ 	//! convenience function for use without geometry shaders
+ 	s32 addHighLevelShaderMaterial(
+ 		const c8* vertexShaderProgram,
+-		const c8* vertexShaderEntryPointName="main",
+-		E_VERTEX_SHADER_TYPE vsCompileTarget=EVST_VS_1_1,
++		const c8* vertexShaderEntryPointName/*="main"*/,
++		E_VERTEX_SHADER_TYPE vsCompileTarget/*=EVST_VS_1_1*/,
+ 		const c8* pixelShaderProgram=0,
+ 		const c8* pixelShaderEntryPointName="main",
+ 		E_PIXEL_SHADER_TYPE psCompileTarget=EPST_PS_1_1,
+@@ -130,8 +130,8 @@
+ 	*/
+ 	s32 addHighLevelShaderMaterial(
+ 		const c8* vertexShaderProgram,
+-		const c8* pixelShaderProgram=0,
+-		IShaderConstantSetCallBack* callback=0,
++		const c8* pixelShaderProgram/*=0*/,
++		IShaderConstantSetCallBack* callback/*=0*/,
+ 		E_MATERIAL_TYPE baseMaterial = video::EMT_SOLID,
+ 		s32 userData=0)
+ 	{
+@@ -150,8 +150,8 @@
+ 	*/
+ 	s32 addHighLevelShaderMaterial(
+ 		const c8* vertexShaderProgram,
+-		const c8* pixelShaderProgram = 0,
+-		const c8* geometryShaderProgram = 0,
++		const c8* pixelShaderProgram /*= 0*/,
++		const c8* geometryShaderProgram /*= 0*/,
+ 		scene::E_PRIMITIVE_TYPE inType = scene::EPT_TRIANGLES,
+ 		scene::E_PRIMITIVE_TYPE outType = scene::EPT_TRIANGLE_STRIP,
+ 		u32 verticesOut = 0,
+@@ -232,7 +232,7 @@
+ 	//! convenience function for use without geometry shaders
+ 	s32 addHighLevelShaderMaterialFromFiles(
+ 		const io::path& vertexShaderProgramFileName,
+-		const c8* vertexShaderEntryPointName = "main",
++		const c8* vertexShaderEntryPointName /*= "main"*/,
+ 		E_VERTEX_SHADER_TYPE vsCompileTarget = EVST_VS_1_1,
+ 		const io::path& pixelShaderProgramFileName = "",
+ 		const c8* pixelShaderEntryPointName = "main",
+@@ -257,8 +257,8 @@
+ 	*/
+ 	s32 addHighLevelShaderMaterialFromFiles(
+ 		const io::path& vertexShaderProgramFileName,
+-		const io::path& pixelShaderProgramFileName = "",
+-		IShaderConstantSetCallBack* callback = 0,
++		const io::path& pixelShaderProgramFileName /*= ""*/,
++		IShaderConstantSetCallBack* callback /*= 0*/,
+ 		E_MATERIAL_TYPE baseMaterial = video::EMT_SOLID,
+ 		s32 userData = 0 )
+ 	{
+@@ -277,8 +277,8 @@
+ 	*/
+ 	s32 addHighLevelShaderMaterialFromFiles(
+ 		const io::path& vertexShaderProgramFileName,
+-		const io::path& pixelShaderProgramFileName = "",
+-		const io::path& geometryShaderProgramFileName = "",
++		const io::path& pixelShaderProgramFileName /*= ""*/,
++		const io::path& geometryShaderProgramFileName /*= ""*/,
+ 		scene::E_PRIMITIVE_TYPE inType = scene::EPT_TRIANGLES,
+ 		scene::E_PRIMITIVE_TYPE outType = scene::EPT_TRIANGLE_STRIP,
+ 		u32 verticesOut = 0,
+diff -u include/IQ3Shader.h irrSWIG.bak/IQ3Shader.h
+--- include/IQ3Shader.h	2014-05-31 23:01:51.000000000 +0100
++++ irrSWIG.bak/IQ3Shader.h	2014-05-11 14:39:53.000000000 +0100
+@@ -18,7 +18,7 @@
+ namespace quake3
+ {
+ 
+-	static core::stringc irrEmptyStringc("");
++	//static core::stringc irrEmptyStringc("");
+ 
+ 	//! Hold the different Mesh Types used for getMesh
+ 	enum eQ3MeshIndex
+diff -u include/SVertexManipulator.h irrSWIG.bak/SVertexManipulator.h
+--- include/SVertexManipulator.h	2014-05-31 23:01:51.000000000 +0100
++++ irrSWIG.bak/SVertexManipulator.h	2014-05-18 21:52:16.000000000 +0100
+@@ -20,8 +20,8 @@
+ 	//! Interface for vertex manipulators.
+ 	/** You should derive your manipulator from this class if it shall be called for every vertex, getting as parameter just the vertex.
+ 	*/
+-	struct IVertexManipulator
+-	{
++	/*struct*/class IVertexManipulator
++	{public:
+ 	};
+ 	//! Vertex manipulator to set color to a fixed color for all vertices
+ 	class SVertexColorSetManipulator : public IVertexManipulator
+diff -u include/irrpack.h irrSWIG.bak/irrpack.h
+--- include/irrpack.h	2014-05-31 23:01:51.000000000 +0100
++++ irrSWIG.bak/irrpack.h	2014-05-31 21:59:25.000000000 +0100
+@@ -34,6 +34,6 @@
+ #		define PACK_STRUCT	__attribute__((packed))
+ 	#endif
+ #else
+-#	error compiler not supported
++#	define PACK_STRUCT //error compiler not supported
+ #endif
+ 
