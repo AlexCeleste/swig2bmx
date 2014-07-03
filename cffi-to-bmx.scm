@@ -502,20 +502,21 @@
 						(pr ", ")
 						(loop (cdr pl) (fx- dct 1)) )))))
 	(define (extend-name mname args aopt retry)
-		(if (null? args)
-			#f;(if is-ctor (set! mname "MakeNew") (set! mname (string-append mname "0")))
-			(begin
-				(set! mname (string-append mname "With"))
-				(for-each
-					(lambda (p)
-						(set! mname (string-append mname (capitalize (tag-to-name
-								(if retry
-									(let* ((t (max-type-tag (cdr p))) (sp (string-index t #\space)))
-										(if sp
-											(begin (set! t (string-append t)) (string-set! t sp #\_) t)
-											t) )
-									(car p) ))))))	;Varnames by default
-					(if (fx> aopt 0) (reverse (list-tail (reverse args) aopt)) args) )))
+		(let ((args (if (fx> aopt 0) (reverse (list-tail (reverse args) aopt)) args)))
+			(if (null? args)
+				#f;(if is-ctor (set! mname "MakeNew") (set! mname (string-append mname "0")))
+				(begin
+					(set! mname (string-append mname "With"))
+					(for-each
+						(lambda (p)
+							(set! mname (string-append mname (capitalize (tag-to-name
+									(if retry
+										(let* ((t (max-type-tag (cdr p))) (sp (string-index t #\space)))
+											(if sp
+												(begin (set! t (string-append t)) (string-set! t sp #\_) t)
+												t) )
+										(car p) ))))))	;Varnames by default
+						args) )))
 		mname)
 	(define (capitalize s)
 		(string-set! s 0 (char-upcase (string-ref s 0)))
