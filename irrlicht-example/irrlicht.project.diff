@@ -1,6 +1,6 @@
-diff -r -u irrlicht-1.8.1/source/Irrlicht/MacOSX/CIrrDeviceMacOSX.mm irrlicht-1.8.1-max/source/Irrlicht/MacOSX/CIrrDeviceMacOSX.mm
---- irrlicht-1.8.1/source/Irrlicht/MacOSX/CIrrDeviceMacOSX.mm	2013-11-17 19:11:00.000000000 +0000
-+++ irrlicht-1.8.1-max/source/Irrlicht/MacOSX/CIrrDeviceMacOSX.mm	2014-06-01 03:36:01.000000000 +0100
+diff -r -u irrlicht-1.8.3/source/Irrlicht/MacOSX/CIrrDeviceMacOSX.mm irrlicht-1.8.3-max/source/Irrlicht/MacOSX/CIrrDeviceMacOSX.mm
+--- irrlicht-1.8.3/source/Irrlicht/MacOSX/CIrrDeviceMacOSX.mm	2013-11-17 19:11:00.000000000 +0000
++++ irrlicht-1.8.3-max/source/Irrlicht/MacOSX/CIrrDeviceMacOSX.mm	2014-06-01 03:36:01.000000000 +0100
 @@ -498,7 +498,7 @@
  			[NSApplication sharedApplication];
  			[NSApp setDelegate:[[[AppDelegate alloc] initWithDevice:this] autorelease]];
@@ -10,9 +10,9 @@ diff -r -u irrlicht-1.8.1/source/Irrlicht/MacOSX/CIrrDeviceMacOSX.mm irrlicht-1.
  		}
  
  		path = [[[NSBundle mainBundle] bundlePath] stringByDeletingLastPathComponent];
-diff -r -u irrlicht-1.8.1/source/Irrlicht/MacOSX/MacOSX.xcodeproj/project.pbxproj irrlicht-1.8.1-max/source/Irrlicht/MacOSX/MacOSX.xcodeproj/project.pbxproj
---- irrlicht-1.8.1/source/Irrlicht/MacOSX/MacOSX.xcodeproj/project.pbxproj	2013-11-17 19:11:00.000000000 +0000
-+++ irrlicht-1.8.1-max/source/Irrlicht/MacOSX/MacOSX.xcodeproj/project.pbxproj	2014-06-01 03:56:57.000000000 +0100
+diff -r -u irrlicht-1.8.3/source/Irrlicht/MacOSX/MacOSX.xcodeproj/project.pbxproj irrlicht-1.8.3-max/source/Irrlicht/MacOSX/MacOSX.xcodeproj/project.pbxproj
+--- irrlicht-1.8.3/source/Irrlicht/MacOSX/MacOSX.xcodeproj/project.pbxproj	2013-11-17 19:11:00.000000000 +0000
++++ irrlicht-1.8.3-max/source/Irrlicht/MacOSX/MacOSX.xcodeproj/project.pbxproj	2014-06-01 03:56:57.000000000 +0100
 @@ -6067,6 +6067,7 @@
  				GCC_PRECOMPILE_PREFIX_HEADER = YES;
  				GCC_PREFIX_HEADER = MacOSX_Prefix.pch;
@@ -72,9 +72,9 @@ diff -r -u irrlicht-1.8.1/source/Irrlicht/MacOSX/MacOSX.xcodeproj/project.pbxpro
  			};
  			name = Release;
  		};
-diff -r -u irrlicht-1.8.1/source/Irrlicht/libpng/pngerror.c irrlicht-1.8.1-max/source/Irrlicht/libpng/pngerror.c
---- irrlicht-1.8.1/source/Irrlicht/libpng/pngerror.c	2012-11-03 17:08:00.000000000 +0000
-+++ irrlicht-1.8.1-max/source/Irrlicht/libpng/pngerror.c	2014-06-01 03:46:23.000000000 +0100
+diff -r -u irrlicht-1.8.3/source/Irrlicht/libpng/pngerror.c irrlicht-1.8.3-max/source/Irrlicht/libpng/pngerror.c
+--- irrlicht-1.8.3/source/Irrlicht/libpng/pngerror.c	2012-11-03 17:08:00.000000000 +0000
++++ irrlicht-1.8.3-max/source/Irrlicht/libpng/pngerror.c	2014-06-01 03:46:23.000000000 +0100
 @@ -36,7 +36,7 @@
   */
  #ifdef PNG_ERROR_TEXT_SUPPORTED

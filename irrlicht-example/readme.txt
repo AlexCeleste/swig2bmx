@@ -13,10 +13,10 @@ using swig2bmx!
 	- a bash environment with usual utilities (cp, diff, pcregrep etc.)
 	- GCC-compatible C++ compiler (do not use Visual Studio)
 
-1) Download Irrlicht version 1.8.1 as a zip file (example is tied to this
-	version for now, sorry)
+1) Download Irrlicht version 1.8.3 as a zip file (example is tied to 1.8.3
+	for now)
 
-2) Extract the Irrlicht zip to this folder (so that "irrlicht-1.8.1" is one of
+2) Extract the Irrlicht zip to this folder (so that "irrlicht-1.8.3" is one of
 	the subfolders here)
 
 3) Copy the three "portable" swig2bmx files from the root folder (above this):
